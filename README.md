@@ -106,6 +106,10 @@ gender participation.
     disciplines.
 -   **Discipline-Wise Trends**: Breakdown of entries per event.
 
+![Architecture Diagram](https://github.com/user-attachments/assets/9101d7de-5a75-495e-8523-479837ba24cb)
+
+
+
 
 ------------------------------------------------------------------------
 
