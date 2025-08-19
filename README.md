@@ -95,6 +95,23 @@ gender participation.
 5.  **Analytics**: Query using Azure Synapse SQL to derive insights.
 6.  **Visualization**: Create bar/line charts in Synapse Studio and
     explore future dashboard integration.
+    
+ -----------------------------------------------------------------------
+
+## ⛃ SQL Queries on Azure Synapse
+This repository contains a file named **`olympic_queries.sql`**, which includes multiple SQL queries for analyzing the Tokyo Olympics dataset.  
+### Steps to Use:
+1. Upload the provided CSV files into your Azure Synapse workspace and create external tables.  
+2. Connect Azure Synapse to your **Resource Group**.  
+3. Run the **`olympic_queries.sql`** file inside Synapse to execute the predefined queries.  
+4. Use Synapse visualization tools to explore insights such as:  
+   - Medal counts by country  
+   - Top athletes by gold medals  
+   - Year-wise participation trends  
+   - Gender-wise athlete distribution  
+   - And more  
+
+This allows you to seamlessly query the Olympics dataset and visualize meaningful insights on Azure Synapse.  
 
 ------------------------------------------------------------------------
 
@@ -138,6 +155,7 @@ gender participation.
     │   ├── etl_Mount_feature _Code                # Mount pipeline
     ├── docs/  
     │   ├── architecture.png                       # Architecture diagram  
+    ├── olympic_queries.sql                        # sql queries - Synapse - visualize  
     ├── README.md                                  # Project documentation  
 
 ------------------------------------------------------------------------
@@ -150,3 +168,18 @@ Databricks, and Synapse Analytics**.
 It highlights the full data lifecycle from ingestion → transformation →
 analytics → visualization, and sets the stage for future dashboarding
 and real-time analytics.
+
+---
+
+## Author
+
+👩‍💻 **Sharvari Pataskar**  
+- GitHub: [PataskarSharvari](https://github.com/PataskarSharvari)  
+- LinkedIn: [Your LinkedIn Profile](https://www.linkedin.com/in/sharvari-pataskar1910/)    
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
