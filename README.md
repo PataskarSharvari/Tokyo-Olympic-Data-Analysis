@@ -14,45 +14,46 @@ ingestion, transformation, storage, analytics, and visualization.
 
 The following architecture was implemented:
 
-![Architecture Diagram](./313a9ea2-c947-4484-99b3-815c31681e89.png)
+![Architecture Diagram](https://github.com/user-attachments/assets/a292fb0c-c204-40d8-aafc-0ffe617ebeb8)
+
 
 ### Workflow:
 
 1.  **Data Source (Kaggle - Tokyo Olympics Dataset)**
     -   Dataset downloaded from Kaggle (CSV files: Athletes, Coaches,
-        Teams, Medals, Entries by Gender).
+        Teams, Medals, Entries by Gender).-https://www.kaggle.com/datasets/arjunprasadsarkhel/2021-olympics-in-tokyo
 2.  **Data Ingestion (Azure Data Factory)**
     -   Pipelines created in **Azure Data Factory (ADF)** to ingest raw
-        CSVs.\
+        CSVs.
     -   Data copied from Kaggle/local storage → **Azure Data Lake
         Storage Gen2 (Raw Zone)**.
 3.  **Raw Data Storage (Azure Data Lake Gen2)**
     -   Ingested CSV files stored in the **Raw Data zone** of ADLS
-        Gen2.\
+        Gen2.
     -   Organized into containers and folders for efficient data
         management.
 4.  **Transformation (Azure Databricks + PySpark)**
-    -   Azure Databricks notebook connected with ADLS Gen2.\
-    -   Performed data cleaning, type casting, and transformations.\
+    -   Azure Databricks notebook connected with ADLS Gen2.
+    -   Performed data cleaning, type casting, and transformations.
     -   Example transformations:
-        -   Cast gender counts to integers.\
-        -   Calculate **top countries by Gold medals**.\
+        -   Cast gender counts to integers.
+        -   Calculate **top countries by Gold medals**.
         -   Compute **average male/female participation per
-            discipline**.\
+            discipline**.
     -   Curated & transformed data saved back to **ADLS Gen2
         (Curated/Transformed Zones)** in **CSV/Parquet formats**.
 5.  **Analytics (Azure Synapse Analytics)**
-    -   Transformed data loaded into **Azure Synapse Analytics**.\
+    -   Transformed data loaded into **Azure Synapse Analytics**.
     -   SQL queries executed for analytical insights:
-        -   Medal tallies per country.\
-        -   Gender participation analysis.\
-        -   Top 10 medal-winning countries.\
+        -   Medal tallies per country.
+        -   Gender participation analysis.
+        -   Top 10 medal-winning countries.
     -   Visualized results in Synapse Studio using **bar and line
         charts**.
 6.  **Dashboards (Optional Future Enhancement)**
     -   Data exposed to BI tools for dashboards:
-        -   **Power BI**\
-        -   **Tableau**\
+        -   **Power BI**
+        -   **Tableau**
         -   **Looker Studio**
 
 ------------------------------------------------------------------------
@@ -105,6 +106,7 @@ gender participation.
     disciplines.\
 -   **Discipline-Wise Trends**: Breakdown of entries per event.
 
+
 ------------------------------------------------------------------------
 
 ## 🔮 Future Enhancements
@@ -120,10 +122,16 @@ gender participation.
 ------------------------------------------------------------------------
 
 ## 📂 Repository Structure
-
+    ├── dataset/ 
+    │   ├── Athletes.csv 
+    │   ├── Coaches.csv 
+    │   ├── EntriesGender.csv 
+    │   ├── Medals.csv 
+    │   ├── Teams.csv 
     ├── notebooks/  
     │   ├── etl_pipeline_tokyo_olympics.ipynb      # Parquet-based pipeline  
     │   ├── etl_pipeline_tokyo_olympics_csv.ipynb  # CSV-based pipeline  
+    │   ├── etl_Mount_feature _Code                # Mount pipeline
     ├── docs/  
     │   ├── architecture.png                       # Architecture diagram  
     ├── README.md                                  # Project documentation  
