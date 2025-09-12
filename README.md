@@ -16,6 +16,10 @@ The following architecture was implemented:
 
 ![Architecture Diagram](https://github.com/user-attachments/assets/a292fb0c-c204-40d8-aafc-0ffe617ebeb8)
 
+## 🎥 Project Demo - 
+
+[![Watch my video]](https://youtu.be/9-FZ6qzVU00)
+
 
 ### Workflow:
 
