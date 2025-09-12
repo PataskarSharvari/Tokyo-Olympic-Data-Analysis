@@ -125,6 +125,9 @@ This allows you to seamlessly query the Olympics dataset and visualize meaningfu
 
 ![Architecture Diagram](https://github.com/user-attachments/assets/9101d7de-5a75-495e-8523-479837ba24cb)
 ![Architecture Diagram](https://github.com/user-attachments/assets/e7397d57-38ab-4510-87be-6e473c6e5b8e)
+![Architecture Diagram](https://github.com/user-attachments/assets/ba73fc48-5cae-4a94-880d-ffdab8d2457c)
+
+
 
 
 
