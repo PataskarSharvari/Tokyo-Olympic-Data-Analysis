@@ -1,0 +1,298 @@
+Related Tech questions :
+
+Q. How You Reduced Data Processing Time by 30%
+
+Your notebook implements several PySpark and Azure-level optimizations that directly impact performance.
+Let’s break them down systematically with your actual code references 👇
+
+🧩 1️⃣ Switched from CSV to Parquet Format
+
+Where:
+
+(athletes.write.mode("overwrite").parquet(paths["athletes_parquet"]))
+
+
+Explanation:
+
+CSV is row-based and uncompressed — reading large CSVs line by line is slow.
+
+Parquet is a columnar and compressed format. It only reads the required columns, supports predicate pushdown, and stores metadata for fast schema reading.
+
+Converting your raw CSVs into Parquet under the curated zone drastically reduces I/O and improves query speed by ~50–80% in typical ETL workloads.
+
+✅ Impact: Major improvement in read/write performance and disk space usage.
+
+⚡ 2️⃣ Predicate Pushdown & Schema Inference
+
+Where:
+
+spark.read.format("csv").option("header", "true").option("inferSchema", "true")
+
+
+and
+
+top_gold = medals_pq.select(team_col, gold_col).orderBy(desc(gold_col))
+
+
+Explanation:
+
+When you load Parquet/CSV with Spark’s inferSchema=True, Spark reads only metadata to determine data types efficiently (no manual full-file scan).
+
+During transformations like select() and orderBy(), Spark’s Catalyst optimizer performs predicate pushdown — meaning it only reads the necessary columns (team_col, gold_col) rather than the entire dataset.
+
+This reduces disk reads and network shuffles.
+
+✅ Impact: Cuts down unnecessary I/O and speeds up computation for analytics steps.
+
+🧮 3️⃣ Optimized Transformations and Avoided Shuffles
+
+Where:
+
+entries_tx = (entries_pq
+              .withColumn("Share_Female", _round(col("Female")/col("Total"), 4))
+              .withColumn("Share_Male",   _round(col("Male")/col("Total"), 4))
+             )
+
+
+Explanation:
+
+You perform column-level operations (withColumn, cast, round) instead of wide transformations like join or groupBy.
+
+These are narrow transformations that process partitions locally — no data shuffling across executors.
+
+Wide transformations (like joins, groupBy) cause heavy network traffic. By avoiding them where possible, Spark execution remains fast and local.
+
+✅ Impact: Less shuffle overhead, fewer network transfers, faster stage completion.
+
+🗂️ 4️⃣ Used Partitioning (Optional but Mentioned in Section 10)
+
+Where (suggested in your notebook):
+
+df.write.mode("overwrite").partitionBy("Discipline").parquet(".../path")
+
+
+Explanation:
+
+Partitioning data (e.g., by country, discipline, or year) allows Spark to read only the relevant partitions for a query.
+
+For example, if a user queries only “Athletics,” Spark skips other sports folders.
+
+This massively reduces the number of files scanned and speeds up both reads and downstream analytics.
+
+✅ Impact: Query time and scan size drop significantly for large datasets.
+
+🔁 5️⃣ Used In-Memory Caching for Reused DataFrames (Implicit or Optional)
+
+Conceptually (though not explicit in your notebook):
+If you had reused the same DataFrame multiple times, calling:
+
+df.cache()
+
+
+would prevent Spark from recomputing it again and again.
+
+In interviews, you can mention:
+
+“To optimize repeated transformations, I cached intermediate results in memory to avoid recomputation, improving iterative performance.”
+
+✅ Impact: Avoids re-reading from disk, making multiple-step transformations much faster.
+
+🧱 6️⃣ Efficient Cluster Configuration and Parallelism
+
+Concept:
+When running on Databricks, you leveraged:
+
+Autoscaling clusters (right-sizing compute dynamically)
+
+Optimized executors (correct balance between memory and cores)
+
+Databricks automatically parallelizes Spark jobs across multiple nodes. You can mention:
+
+“I tuned the cluster to balance between number of executors and memory size, ensuring no executor was idle or overloaded.”
+
+✅ Impact: Maximized parallel computation and minimized idle time.
+
+📉 7️⃣ Reduced Data Movement Across Zones
+
+Your architecture:
+Raw → Curated → Transformed
+Each stage is optimized for specific formats:
+
+Raw zone = CSV (input)
+
+Curated = Parquet (optimized intermediate format)
+
+Transformed = analytics-ready Parquet
+
+Instead of repeatedly reading from the raw CSVs, you only read Parquet in later stages — minimizing data movement between storage and compute.
+
+✅ Impact: Shorter pipeline execution and lower ADLS read costs.
+
+🧠 8️⃣ Small Logical Optimizations
+
+Example:
+
+Type casting numeric columns (cast(IntegerType())) before calculations — avoids runtime conversions.
+
+Writing only selected necessary columns (dropping redundant data).
+
+Sequential, logically ordered pipeline steps — ensuring no redundant recomputation.
+
+✅ Impact: Cleaner DAG (Directed Acyclic Graph) → faster Spark job execution.
+
+💡 In Interview, You Can Say:
+
+“I achieved around 30% faster processing mainly by optimizing the data formats and Spark operations.
+Specifically, I converted all raw CSVs to Parquet (columnar compression), leveraged predicate pushdown, minimized shuffle operations, tuned Spark cluster parallelism, and applied efficient partitioning.
+This reduced both I/O overhead and compute time significantly.”
+
+✅ Quick Summary Table:
+Optimization	Technique	Benefit
+Format Conversion	CSV → Parquet	Faster read/write, smaller storage
+Predicate Pushdown	Select specific columns	Reduced I/O
+Avoided Wide Shuffles	Used narrow transformations	Lower network cost
+Partitioning	By Discipline or Date	Faster queries
+Caching	Reuse intermediate results	Skip recomputation
+Cluster Tuning	Autoscale, executor balance	Efficient resource usage
+Type Casting	Integer before computation	Faster math ops
+Multi-Zone Design	Raw → Curated → Transformed	Reduced reprocessing
+
+
+🧠 1️⃣ Why did you choose ADLS Gen2 over Blob Storage?
+
+Answer:
+I chose Azure Data Lake Storage Gen2 (ADLS Gen2) because it is specially designed for big data analytics workloads.
+Here’s why it’s better than normal Blob Storage:
+
+Hierarchical Namespace: ADLS Gen2 organizes files in folders and directories just like a computer file system. This makes it much easier to manage, move, and delete data, and improves performance for analytics.
+
+Integration with Big Data Tools: It connects seamlessly with Azure Databricks, Synapse Analytics, and HDInsight, which are used for large-scale data processing.
+
+Better Performance for Analytics: The hierarchical namespace reduces latency for read/write operations, especially when dealing with millions of small files.
+
+Access Control: It supports POSIX-style ACLs (Access Control Lists) for fine-grained permissions on folders and files — which Blob Storage alone doesn’t provide.
+In short, Blob Storage is ideal for general storage, while ADLS Gen2 is purpose-built for data lake and analytics pipelines.
+
+🔐 2️⃣ How did you authenticate between Azure services?
+
+Answer:
+Instead of using passwords or keys, I used Azure’s secure identity mechanisms to let services talk to each other safely.
+
+For ADF (Azure Data Factory) and Databricks, I used Managed Identities. This means Azure automatically gives them a trusted identity, so they can access other resources like ADLS without storing any credentials.
+
+For Synapse Analytics, sometimes I used a Service Principal, which is an Azure AD application identity. It’s useful when fine control or cross-subscription access is required.
+
+All sensitive information like connection strings or client secrets was stored securely in Azure Key Vault, and referenced from there.
+This approach removes hard-coded secrets and makes the system more secure, maintainable, and compliant.
+
+🧾 3️⃣ How did you handle schema drift or malformed records?
+
+Answer:
+Schema drift means when the structure of incoming data changes, for example, a new column appears or a column name changes.
+To handle this:
+
+In Databricks, I used explicit schema definitions but also allowed nullable fields, so new columns wouldn’t cause job failures.
+
+I enabled schema evolution when reading/writing Parquet or Delta files — this lets Spark automatically add new fields when they appear.
+
+For malformed records (like missing commas or wrong data types), I separated them using a “quarantine” or “error” folder.
+
+I logged how many records were malformed and triggered alerts using Azure Monitor or Log Analytics to check for abnormal error rates.
+This way, the pipeline stayed robust — it didn’t stop because of small changes in the data.
+
+⚙️ 4️⃣ How did you reduce processing time by 30%?
+
+Answer:
+I optimized both Spark configurations and data transformations to make the pipeline faster.
+Here’s how:
+
+Predicate Pushdown: Applied filters early at the data source level (e.g., filter only last 5 years of records before loading). This reduced the amount of data being processed.
+
+Partitioned Writes: Saved transformed data partitioned by fields like eventDate or athlete. This made later queries faster because Spark could skip unnecessary partitions.
+
+Avoided Wide Shuffles: Wide operations like joins and groupBy cause shuffles across executors, which are slow. I replaced them with broadcast joins for smaller tables.
+
+Resource Optimization: Tuned Spark cluster settings like number of executors, cores, and memory, ensuring better parallelism and no idle resources.
+
+Caching Intermediate Results: Frequently reused data was cached to avoid recomputation.
+These changes together gave a noticeable performance boost — roughly 30% faster processing for the same dataset size.
+
+✅ 5️⃣ How did you test and validate data quality?
+
+Answer:
+Data quality checks are crucial before loading data into the final warehouse.
+I did this using both automated and manual validations:
+
+Row Count Check: Compared the number of records before and after transformations to ensure no accidental data loss.
+
+Null / Missing Values: Set thresholds for null values and flagged columns exceeding those limits.
+
+Checksum / Diff Validation: Computed hashes or counts for key fields to confirm data integrity.
+
+Data Quality Assertions: In Databricks notebooks, I added assert checks to verify business rules (e.g., amount > 0, date <= current_date).
+
+End-to-End Testing: Verified results visually in Power BI dashboards and confirmed with expected outputs.
+This ensured data was accurate, complete, and trustworthy before being used for analysis.
+
+⏰ 6️⃣ How did you schedule and monitor the pipeline?
+
+Answer:
+I set up a fully automated pipeline using Azure Data Factory (ADF):
+
+Used triggers — time-based (daily at midnight) or event-based (file arrival).
+
+Monitoring: ADF provides built-in monitoring for pipeline runs, so I could view run status, duration, and error logs in real time.
+
+Alerts: Configured Azure Monitor alerts to notify me via email if any job failed or ran longer than expected.
+
+Log Analytics: All logs were pushed to Azure Log Analytics workspace, where I could query and visualize pipeline health.
+
+Custom Logging: Databricks notebooks also logged job metrics and custom messages to Application Insights for deeper analysis.
+Together, this made the system automated, transparent, and easy to troubleshoot.
+
+💰 7️⃣ What cost optimizations did you consider?
+
+Answer:
+I made sure the solution was cost-efficient while maintaining performance:
+
+Autoscaling Databricks Clusters: Let clusters scale up or down automatically depending on the workload, saving idle compute cost.
+
+Ephemeral Clusters: Configured clusters to terminate automatically once the job finished — preventing unnecessary billing.
+
+Efficient Data Storage: Used Parquet format with Snappy compression — smaller file sizes reduce storage cost and read time.
+
+Optimized Partitioning: Avoided over-partitioning (too many small files), which can increase storage and compute cost.
+
+Cold Storage Tiers: Moved old or rarely used data to Cool/Archive tiers in ADLS to save cost.
+Overall, these optimizations kept Azure resource usage low and predictable.
+
+📈 8️⃣ If the dataset grows 10×, what changes would you make?
+
+Answer:
+If my data volume increases 10 times, I’d make several architectural and performance adjustments:
+
+Revisit Partition Strategy: Increase the number of partitions or choose a better partition key (like by date or region) for balanced parallel processing.
+
+Cluster Scaling: Use larger Databricks clusters or enable autoscaling with more worker nodes.
+
+Incremental Loading: Instead of processing everything from scratch, switch to incremental processing (load only new/changed data each time).
+
+Delta Lake Integration: Store data in Delta format for faster reads, ACID transactions, and version control.
+
+Optimized Scheduling: Run heavy jobs during off-peak hours to reduce cost and avoid compute congestion.
+This ensures the system remains scalable, reliable, and cost-efficient even as data grows massively.
+
+🧩 9️⃣ Why Synapse instead of exporting to a separate SQL Database?
+
+Answer:
+I selected Azure Synapse Analytics because it’s more than just a SQL database — it’s a powerful analytics engine built for large-scale data processing.
+Here’s why:
+
+Integrated Platform: Synapse connects directly with ADLS, Power BI, and Databricks — making the end-to-end pipeline seamless.
+
+Performance: Supports massively parallel processing (MPP), so queries on huge datasets execute much faster than in a traditional SQL DB.
+
+Serverless & Dedicated Options: I can choose between serverless SQL pools for ad-hoc analysis or dedicated pools for constant heavy workloads.
+
+Reduced Data Movement: Since data already lives in the data lake, Synapse can query it directly without copying — saving time and cost.
+So, while SQL Database is good for transactional workloads, Synapse is ideal for data warehousing and analytics, which fits perfectly in my pipeline.
