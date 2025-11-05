@@ -1,4 +1,23 @@
 Related Tech questions :
+Q. Explain project.
+Ans = Script:
+
+“My first major project is an Azure-based ETL Data Pipeline that processes and analyzes the Tokyo Olympics dataset to extract meaningful insights.
+
+The objective was to design a scalable, automated data pipeline that could handle large datasets efficiently from ingestion to visualization.
+
+For the tech stack, I used Azure Data Factory for orchestration, Azure Data Lake Gen2 as raw storage, Azure Databricks (PySpark) for data cleaning and transformation, and Azure Synapse Analytics for structured data warehousing. The dashboards were built using Power BI.
+
+My approach involved creating linked services and pipelines in Data Factory to extract raw CSV files from GitHub, land them in Data Lake, transform them in Databricks using PySpark (for cleaning missing values, normalizing athlete names, and merging event tables), and finally load the curated data into Synapse for analysis.
+
+To optimize performance, I implemented partitioning and broadcast joins in PySpark, which improved transformation speed by about 30%.
+
+One of the key challenges was ensuring data reliability during pipeline runs — I handled this using ADF trigger retries and data validation notebooks.
+
+The end result was a completely automated, monitored pipeline that processed over 11,000 records and generated interactive dashboards for medal distribution and performance trends.
+
+This project strengthened my understanding of data engineering workflows, orchestration, and Azure cloud services integration.”
+
 
 Q. How You Reduced Data Processing Time by 30%
 
